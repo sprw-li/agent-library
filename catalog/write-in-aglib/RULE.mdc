@@ -1,0 +1,14 @@
+---
+description: 写技能、规则或同类共享正文时，只写在 agent library 的 catalog，再投影
+alwaysApply: true
+---
+
+# 技能和规则写在 aglib
+
+写技能、规则，以及同类共享正文（manifest、MCP 登记）时，只写 agent library：`%USERPROFILE%\.agent-library`。
+
+- 正文在 `catalog/<id>/`。技能是 `SKILL.md` + `manifest.json`，规则是 `RULE.mdc` + `manifest.json`。MCP 登记在 `mcp/<id>.json`。
+- 写完用 `py -3 scripts/project.py` 投影。不要只改 `projections/`。
+- 不要写到各 Agent 正在用的目录（如 `~\.cursor\skills`）。`projectLive` 这一期不允许。
+- 不要用 `mklink`/目录联接把 `projections/` 强接进各 Agent 的 skills，兼容与差异靠投影和 overlay。
+- 共享正文只有 admin（Cursor）改。writer 只改自己的 overlay。授权码不进 catalog，也不进 projections。邮箱授权码只放 `secrets/mailboxes.json`，该目录不投影、不提交。

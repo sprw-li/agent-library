@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+state/
+secrets/
+_trash/
+catalog/index.json
+catalog/index.fts.db
+catalog/*/smoke-passed.json
+catalog/*/*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "agentlib-router",
+  "kind": "skill",
+  "mode": "on-demand",
+  "category": "meta",
+  "when": [
+    "在 agent-library 中按意图查找技能。任何任务开始前先调用它，拿到候选 skill 路径后再读正文；不要枚举 catalog 全部技能，也不要把几千条描述塞进上下文。"
+  ],
+  "whenNot": [
+    "任务与上面描述不匹配时"
+  ],
+  "keywords": [
+    "aglib",
+    "agent-library",
+    "路由",
+    "找技能",
+    "router",
+    "skill 检索"
+  ],
+  "examples": [
+    "这个任务该用哪个 skill",
+    "在 aglib 里找处理 PDF 的技能",
+    "我这有个画反应式的活儿，catalog 里哪个技能能干？"
+  ],
+  "requires": [
+    "filesystem-read"
+  ],
+  "merge": "shared",
+  "notes": {
+    "source": "dsh ~/.dsh/skills 与 aglib catalog 双驻地，两处内容一致"
+  },
+  "intents": [
+    "find-skill"
+  ]
+}

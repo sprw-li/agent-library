@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "md-table-png",
+  "kind": "skill",
+  "mode": "on-demand",
+  "when": [
+    "Export Chinese markdown/HTML tables to cropped PNG screenshots. Use when the user asks 导出为图, 表截图, 把表做成图, PNG of tables, or shareable table images from a report."
+  ],
+  "whenNot": [
+    "这件事和该条目的 when 对不上"
+  ],
+  "requires": [
+    "filesystem-read"
+  ],
+  "merge": "shared",
+  "examples": [
+    "把这个 markdown 表格截成 PNG 发我，记得裁掉白边",
+    "报告里这几张中文表能做成图片吗，我要贴到微信里",
+    "这张大表太长了，帮我拆成几张清晰的截图"
+  ],
+  "intents": [
+    "skill-md-table-png"
+  ],
+  "keywords": [
+    "表格截图",
+    "导出图片",
+    "markdown 表格",
+    "PNG",
+    "headless 截图"
+  ],
+  "notes": {}
+}

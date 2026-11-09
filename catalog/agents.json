@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "note": "唯一真源是 catalog/；这里只登记各 Agent 的目录根，不复制源。示例路径请改成你自己的。",
+  "agents": {
+    "dsh": {
+      "skillRoot": "~/.dsh/skills",
+      "role": "admin"
+    },
+    "cursor": {
+      "skillRoot": "~/.cursor/skills",
+      "role": "admin"
+    },
+    "qoder-cn": {
+      "skillRoot": "~/.qoder-cn/skills",
+      "role": "writer"
+    }
+  },
+  "roles": {
+    "admin": {
+      "grants": [
+        "filesystem-read",
+        "filesystem-write",
+        "shell",
+        "network"
+      ]
+    },
+    "writer": {
+      "grants": [
+        "filesystem-read",
+        "filesystem-write",
+        "shell",
+        "network"
+      ]
+    },
+    "restricted": {
+      "grants": [
+        "filesystem-read",
+        "network"
+      ]
+    }
+  }
+}

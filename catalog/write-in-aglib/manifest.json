@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "write-in-aglib",
+  "kind": "rule",
+  "mode": "resident",
+  "when": [
+    "写技能、规则或同类共享正文时，只写在 agent library 的 catalog，再投影"
+  ],
+  "whenNot": [
+    "这件事和该条目的 when 对不上"
+  ],
+  "requires": [
+    "filesystem-read"
+  ],
+  "merge": "shared",
+  "examples": [
+    "帮我写个新 skill，记得放到 agent library 里再投影",
+    "这条规则要写到哪里？直接改 cursor 的 skills 目录行不行？",
+    "改完 catalog 之后怎么同步到各个 Agent 在用的目录？"
+  ],
+  "intents": [
+    "agent-library-skill-create"
+  ],
+  "keywords": [
+    "agent library",
+    "catalog",
+    "投影",
+    "SKILL.md",
+    "RULE.mdc",
+    "manifest"
+  ],
+  "notes": {}
+}

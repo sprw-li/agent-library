@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "standard-curve",
+  "kind": "skill",
+  "mode": "on-demand",
+  "when": [
+    "HPLC/UV 标准曲线建立、LOD/LOQ 估算、未知样浓度反算。Use when user mentions 标准曲线, calibration curve, LOD, LOQ, 线性回归, 浓度反算, or provides standards CSV with concentration and signal/area columns."
+  ],
+  "whenNot": [
+    "这件事和该条目的 when 对不上"
+  ],
+  "examples": [
+    "这是标准品的浓度和峰面积，帮我建条标准曲线算出 LOD 和 LOQ",
+    "用这条校准曲线帮我反算这几个未知样的浓度",
+    "data 目录里的 HPLC 数据帮我拟合一下，看看 R² 够不够"
+  ],
+  "intents": ["chemistry-data"],
+  "keywords": ["标准曲线", "HPLC", "LOD", "LOQ", "calibration curve", "浓度反算"],
+  "requires": [
+    "filesystem-read"
+  ],
+  "merge": "shared",
+  "notes": {}
+}

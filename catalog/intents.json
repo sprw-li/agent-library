@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "note": "示例目录：随仓库只带两个示例条目，完整技能库是私有的。",
+  "intents": [
+    {
+      "id": "document-excel",
+      "category": "documents",
+      "description": "读取/编辑/生成 Excel 表格",
+      "patterns": [
+        "(xlsx|excel|表格|spreadsheet|csv|tsv|\\.xlsx)"
+      ],
+      "keywords": [
+        "Excel",
+        "xlsx",
+        "表格",
+        "CSV"
+      ],
+      "excludes": [
+        "pdf",
+        "docx",
+        "pptx"
+      ],
+      "examples": [
+        "整理这个 Excel",
+        "从 CSV 生成表"
+      ],
+      "skills": [
+        "standard-curve"
+      ]
+    },
+    {
+      "id": "chemistry-data",
+      "category": "science",
+      "description": "化学数据分析、HPLC 标准曲线、Jupyter",
+      "patterns": [
+        "(标准曲线|calibration curve|hplc|化学数据|jupyter|notebook|实验数据)"
+      ],
+      "keywords": [
+        "标准曲线",
+        "HPLC",
+        "Jupyter",
+        "实验数据"
+      ],
+      "excludes": [],
+      "examples": [
+        "建立 HPLC 标准曲线",
+        "用 notebook 分析化学数据"
+      ],
+      "skills": [
+        "standard-curve"
+      ]
+    },
+    {
+      "id": "skill-md-table-png",
+      "category": "general",
+      "description": "Export Chinese markdown/HTML tables to cropped PNG screenshots. Use when the user asks 导出为图, 表截图, 把表做成图, PNG of tables, or shareable table images from a report.",
+      "patterns": [
+        "md\\-table\\-png",
+        "screenshots",
+        "shareable",
+        "markdown",
+        "chinese",
+        "md",
+        "table",
+        "png"
+      ],
+      "keywords": [
+        "screenshots",
+        "shareable",
+        "markdown",
+        "chinese",
+        "md",
+        "table",
+        "png"
+      ],
+      "excludes": [],
+      "examples": [],
+      "skills": [
+        "md-table-png"
+      ]
+    },
+    {
+      "id": "find-skill",
+      "category": "meta",
+      "description": "在 agent-library（aglib）里按需求查找/推荐 skill，或问这个任务该用哪个技能",
+      "patterns": [
+        "(在|从)?.{0,4}(aglib|agent-library|技能库|skill 库).{0,8}(找|查|搜|有|推荐)",
+        "(找|有|推荐).{0,4}(什么|哪个|哪些).{0,4}(skill|技能)",
+        "(skill|技能).{0,4}(路由|检索|推荐|选择)"
+      ],
+      "keywords": [
+        "aglib",
+        "agent-library",
+        "找技能",
+        "skill 检索",
+        "路由"
+      ],
+      "excludes": [
+        "创建 skill",
+        "评估 skill"
+      ],
+      "examples": [
+        "aglib 里有没有处理 PDF 的 skill",
+        "这个任务该用哪个技能"
+      ],
+      "skills": [
+        "agentlib-router"
+      ]
+    }
+  ],
+  "categories": {
+    "science": [
+      "chemistry-data"
+    ],
+    "documents": [
+      "document-excel"
+    ],
+    "meta": [
+      "find-skill"
+    ]
+  }
+}

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>技能库</title>
+<style>
+  :root {
+    --bg: #f3f0e8;
+    --paper: #fffcf7;
+    --ink: #1d1c19;
+    --muted: #6e685f;
+    --line: #ddd6c8;
+    --green: #24382c;
+    --green-soft: #e5efe6;
+    --rule: #8a5a22;
+    --rule-soft: #f4ead8;
+    --danger: #8d2f2f;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 15px/1.45 "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+  }
+  header {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    padding: 14px 18px 10px;
+  }
+  h1 { font-size: 20px; font-weight: 650; margin: 0; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .filters { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  input[type="search"], select, textarea {
+    font: inherit;
+    color: inherit;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  input[type="search"] { width: 240px; padding: 7px 10px; }
+  .chips { display: flex; gap: 4px; }
+  .chips button, .actions button {
+    font: inherit;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .chips button.on { background: var(--green); color: white; border-color: var(--green); }
+  main { display: grid; grid-template-columns: 420px 1fr; height: calc(100% - 72px); }
+  #list {
+    overflow: auto;
+    border-top: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    background: #faf8f3;
+  }
+  .row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    padding: 10px 14px;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .row.on { background: var(--green-soft); }
+  .row-top { display: flex; gap: 8px; align-items: baseline; }
+  .name { font-weight: 650; }
+  .tags { margin-left: auto; display: flex; gap: 4px; flex: none; }
+  .tag {
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #ece7dc;
+    color: var(--muted);
+  }
+  .tag.rule { background: var(--rule-soft); color: var(--rule); }
+  .tag.resident { background: var(--green); color: white; }
+  .purpose {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 3px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #detail { overflow: auto; padding: 16px 20px 28px; background: var(--paper); }
+  .empty { color: var(--muted); padding-top: 40px; }
+.pager { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 14px 0 24px; color: var(--muted); font-size: 13px; }
+.pager button { padding: 4px 12px; }
+.pager button[disabled] { opacity: .35; cursor: default; }
+  .detail-top { display: flex; gap: 8px; align-items: center; }
+  #title { font-size: 22px; margin: 0; }
+  .path { color: var(--muted); font-size: 12px; margin: 4px 0 12px; }
+  .blurb { font-size: 16px; margin: 0 0 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  textarea { width: 100%; padding: 8px 10px; resize: vertical; }
+  #when { min-height: 72px; }
+  #whenNot { min-height: 52px; }
+  #body { min-height: 280px; font-family: Consolas, "Microsoft YaHei", monospace; font-size: 13px; }
+  .row-inline { display: flex; gap: 16px; align-items: end; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+  .actions .primary { background: var(--green); color: white; border-color: var(--green); }
+  .actions .danger { color: var(--danger); border-color: #e2c2c2; }
+  #confirm { display: none; gap: 8px; align-items: center; color: var(--danger); }
+  #confirm.show { display: flex; }
+  #status { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .need { color: var(--muted); font-size: 13px; }
+  .route-panel {
+    position: fixed; right: 16px; bottom: 16px; width: 440px; max-height: 65vh;
+    overflow: auto; background: var(--paper); border: 1px solid var(--line);
+    border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,.18); padding: 12px; z-index: 20;
+  }
+  .route-panel.hidden { display: none; }
+  .route-panel input { width: 100%; padding: 7px 10px; margin-bottom: 8px; }
+  .route-panel select { width: 100%; padding: 6px 8px; margin-bottom: 8px; }
+  .route-panel pre { white-space: pre-wrap; font-size: 12px; margin: 8px 0 0; }
+  .route-panel .cand { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 6px; }
+  .intent-panel {
+    position: fixed; inset: 24px; z-index: 30; display: grid;
+    grid-template-columns: 330px 1fr; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 16px 60px rgba(0,0,0,.28); overflow: hidden;
+  }
+  .intent-panel.hidden { display: none; }
+  .intent-list { overflow: auto; border-right: 1px solid var(--line); background: #faf8f3; }
+  .intent-list button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; padding: 8px 12px; font: inherit; cursor: pointer; }
+  .intent-list button.on { background: var(--green-soft); }
+  .intent-edit { overflow: auto; padding: 14px 18px 24px; }
+  .intent-edit h2 { margin: 0 0 8px; font-size: 19px; }
+  .intent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .intent-grid textarea { min-height: 80px; font: 12px/1.4 Consolas, "Microsoft YaHei", monospace; }
+  .intent-edit textarea.wide { min-height: 70px; font: 12px/1.4 Consolas, "Microsoft YaHei", monospace; }
+  .intent-edit input[type="text"] { width: 100%; padding: 7px 9px; font: inherit; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; }
+  .overlay-box { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 10px; }
+  .overlay-box select, .overlay-box textarea { width: 100%; }
+  .overlay-box textarea { min-height: 150px; font: 12px/1.4 Consolas, "Microsoft YaHei", monospace; }
+  .overlay-row { display: flex; gap: 12px; align-items: center; }
+  .overlay-row label { margin: 0; color: var(--ink); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>技能库</h1>
+    <div class="sub">共享库里的技能和规则。保存后刷新 catalog 索引；删除先放进 _trash。</div>
+  </div>
+  <div class="filters">
+    <input id="q" type="search" placeholder="搜名称或用途" autofocus>
+    <div class="chips" id="kindChips">
+      <button type="button" data-kind="all" class="on">全部</button>
+      <button type="button" data-kind="rule">规则</button>
+      <button type="button" data-kind="skill">技能</button>
+    </div>
+    <div class="chips" id="modeChips">
+      <button type="button" data-mode="all" class="on">不限</button>
+      <button type="button" data-mode="resident">常驻</button>
+      <button type="button" data-mode="on-demand">按需</button>
+    </div>
+    <button type="button" id="routeToggle">路由测试</button>
+    <button type="button" id="intentToggle">意图表</button>
+  </div>
+</header>
+<div id="routePanel" class="route-panel hidden">
+  <input id="routeQ" type="search" placeholder="例如：帮我画出乙醇 / 我需要准备答辩">
+  <select id="routeAgent">
+    <option value="">不按 Agent 过滤</option>
+    <option value="cursor">cursor</option>
+    <option value="dsh">dsh</option>
+    <option value="workbuddy">workbuddy</option>
+    <option value="kimi">kimi</option>
+    <option value="qoder-cn">qoder-cn</option>
+    <option value="zcode">zcode</option>
+  </select>
+  <button type="button" id="routeBtn">路由</button>
+  <pre id="routeOut">输入一句话，看会命中哪个 intent / skill。</pre>
+</div>
+<div id="intentPanel" class="intent-panel hidden">
+  <div class="intent-list" id="intentList"></div>
+  <div class="intent-edit">
+    <h2 id="intentTitle">意图表</h2>
+    <div class="row-inline">
+      <div style="flex:1">
+        <label for="intentSearch">搜索 intent / skill</label>
+        <input type="text" id="intentSearch" placeholder="find-skill / chemistry-data">
+      </div>
+      <button type="button" id="intentNew">新建</button>
+      <button type="button" id="intentClose">关闭</button>
+    </div>
+    <div class="intent-grid">
+      <div>
+        <label for="intentId">intent id</label>
+        <input type="text" id="intentId" placeholder="find-skill">
+      </div>
+      <div>
+        <label for="intentCategory">分类</label>
+        <input type="text" id="intentCategory" placeholder="thinking">
+      </div>
+    </div>
+    <label for="intentDesc">description</label>
+    <input type="text" id="intentDesc" placeholder="一句话说明什么时候用">
+    <div class="intent-grid">
+      <div>
+        <label for="intentPatterns">patterns（一行一条正则）</label>
+        <textarea id="intentPatterns"></textarea>
+      </div>
+      <div>
+        <label for="intentKeywords">keywords（一行一条）</label>
+        <textarea id="intentKeywords"></textarea>
+      </div>
+      <div>
+        <label for="intentExcludes">excludes（一行一条正则）</label>
+        <textarea id="intentExcludes"></textarea>
+      </div>
+      <div>
+        <label for="intentExamples">examples（一行一条真实话术）</label>
+        <textarea id="intentExamples"></textarea>
+      </div>
+    </div>
+    <label for="intentSkills">skills（一行一个 catalog id）</label>
+    <textarea id="intentSkills" class="wide"></textarea>
+    <div class="actions">
+      <button type="button" class="primary" id="intentSave">保存 intent</button>
+      <button type="button" class="danger" id="intentDelete">删除 intent</button>
+      <span id="intentStatus"></span>
+    </div>
+  </div>
+</div>
+<main>
+  <div id="list"></div>
+<div id="pager" class="pager"></div>
+  <section id="detail"><p class="empty">左边点一条，看它是干什么的。</p></section>
+</main>
+<script>
+const AGLIB_TOKEN = "__AGLIB_TOKEN__";
+const kindName = { skill: "技能", rule: "规则" };
+const modeName = { resident: "常驻", "on-demand": "按需" };
+const needName = {
+  "filesystem-read": "读文件",
+  "filesystem-write": "写文件",
+  shell: "命令行",
+  network: "联网",
+  secrets: "密钥"
+};
+let items = [];
+let agents = [];
+let kind = "all";
+let mode = "all";
+let current = null;
+
+const q = document.getElementById("q");
+const list = document.getElementById("list");
+const detail = document.getElementById("detail");
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+
+function apiFetch(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    headers: { ...(options.headers || {}), "X-AGLIB-Token": AGLIB_TOKEN }
+  });
+}
+
+function filtered() {
+  const query = q.value.trim().toLowerCase();
+  return items.filter(item => {
+    if (kind !== "all" && item.kind !== kind) return false;
+    if (mode !== "all" && item.mode !== mode) return false;
+    if (!query) return true;
+    return (item.id + " " + item.purpose + " " + item.excerpt).toLowerCase().includes(query);
+  });
+}
+
+let page = 0;
+const PAGE_SIZE = 20;
+
+function renderPager(total, pages) {
+  const pager = document.getElementById("pager");
+  if (total <= PAGE_SIZE) { pager.innerHTML = ""; return; }
+  pager.innerHTML = `<button type="button" id="prevPage" ${page === 0 ? "disabled" : ""}>上一页</button>
+    <span>${page * PAGE_SIZE + 1}–${Math.min(total, (page + 1) * PAGE_SIZE)} / ${total}</span>
+    <button type="button" id="nextPage" ${page >= pages - 1 ? "disabled" : ""}>下一页</button>`;
+  const prev = document.getElementById("prevPage");
+  const next = document.getElementById("nextPage");
+  if (prev) prev.onclick = () => { page = Math.max(0, page - 1); renderList(); };
+  if (next) next.onclick = () => { page = Math.min(pages - 1, page + 1); renderList(); };
+}
+
+function renderList() {
+  const rows = filtered();
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  page = Math.min(page, pages - 1);
+  const view = rows.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  renderPager(rows.length, pages);
+  list.innerHTML = view.map(item => `
+    <button type="button" class="row${current && current.rel === item.rel ? " on" : ""}" data-rel="${esc(item.rel)}">
+      <div class="row-top">
+        <span class="name">${esc(item.id)}</span>
+        <span class="tags">
+          <span class="tag ${item.kind}">${kindName[item.kind] || item.kind}</span>
+          <span class="tag ${item.mode}">${modeName[item.mode] || item.mode}</span>
+        </span>
+      </div>
+      <div class="purpose">${esc(item.excerpt || item.purpose || "没有写用途")}</div>
+    </button>`).join("") || `<p class="empty">没有符合的条目。</p>`;
+  document.querySelector('#kindChips [data-kind="all"]').textContent = `全部 ${items.length}`;
+  document.querySelector('[data-kind="rule"]').textContent = `规则 ${items.filter(i => i.kind === "rule").length}`;
+  document.querySelector('[data-kind="skill"]').textContent = `技能 ${items.filter(i => i.kind === "skill").length}`;
+}
+
+async function loadList() {
+  const res = await apiFetch("/api/items");
+  const data = await res.json();
+  items = data.items || [];
+  renderList();
+}
+
+async function loadAgents() {
+  const res = await apiFetch("/api/agents");
+  const data = await res.json();
+  agents = data.agents || [];
+}
+
+async function loadOverlay() {
+  const select = document.getElementById("overlayAgent");
+  const status = document.getElementById("overlayStatus");
+  if (!select || !current) return;
+  const agent = select.value;
+  if (!agent) return;
+  status.textContent = "读取…";
+  const res = await apiFetch(`/api/overlay?rel=${encodeURIComponent(current.rel)}&agent=${encodeURIComponent(agent)}`);
+  const data = await res.json();
+  if (!res.ok) { status.textContent = data.error || "读取失败"; return; }
+  document.getElementById("overlayIgnore").checked = !!data.ignore;
+  document.getElementById("overlayBody").value = data.body || "";
+  status.textContent = `${data.variant ? "有特殊版" : "无特殊版"} / ${data.ignore ? "已 ignore" : "未 ignore"}`;
+}
+
+async function saveOverlay() {
+  const select = document.getElementById("overlayAgent");
+  const status = document.getElementById("overlayStatus");
+  if (!select || !current || !select.value) return;
+  status.textContent = "保存…";
+  const res = await apiFetch("/api/overlay/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      rel: current.rel,
+      agent: select.value,
+      ignore: document.getElementById("overlayIgnore").checked,
+      body: document.getElementById("overlayBody").value
+    })
+  });
+  const data = await res.json();
+  status.textContent = res.ok ? "覆盖已保存。" + (data.project || "") : (data.error || "保存失败");
+  if (res.ok) await loadList();
+}
+
+let intentsData = { intents: [], categories: {} };
+let currentIntent = null;
+const intentPanel = document.getElementById("intentPanel");
+const intentList = document.getElementById("intentList");
+
+function renderIntentList() {
+  const query = (document.getElementById("intentSearch").value || "").trim().toLowerCase();
+  const rows = (intentsData.intents || []).filter(it => {
+    if (!query) return true;
+    return JSON.stringify(it).toLowerCase().includes(query);
+  });
+  intentList.innerHTML = rows.map(it => `
+    <button type="button" class="${currentIntent && currentIntent.id === it.id ? "on" : ""}" data-intent="${esc(it.id)}">
+      <strong>${esc(it.id)}</strong>
+      <div class="purpose">${esc(it.category || "")} · ${esc((it.skills || []).join(", "))}</div>
+    </button>`).join("") || `<p class="empty">没有 intent。</p>`;
+}
+
+async function loadIntents() {
+  const res = await apiFetch("/api/intents");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "读取 intent 失败");
+  intentsData = data;
+  renderIntentList();
+}
+
+function fillIntent(it) {
+  currentIntent = it || null;
+  document.getElementById("intentTitle").textContent = it ? `intent: ${it.id}` : "新建 intent";
+  document.getElementById("intentId").value = it ? it.id : "";
+  document.getElementById("intentCategory").value = it ? (it.category || "") : "meta";
+  document.getElementById("intentDesc").value = it ? (it.description || "") : "";
+  document.getElementById("intentPatterns").value = it ? (it.patterns || []).join("\n") : "";
+  document.getElementById("intentKeywords").value = it ? (it.keywords || []).join("\n") : "";
+  document.getElementById("intentExcludes").value = it ? (it.excludes || []).join("\n") : "";
+  document.getElementById("intentExamples").value = it ? (it.examples || []).join("\n") : "";
+  document.getElementById("intentSkills").value = it ? (it.skills || []).join("\n") : "";
+  document.getElementById("intentStatus").textContent = "";
+  renderIntentList();
+}
+
+async function saveIntent() {
+  const status = document.getElementById("intentStatus");
+  status.textContent = "保存…";
+  const payload = {
+    original_id: currentIntent ? currentIntent.id : "",
+    id: document.getElementById("intentId").value.trim(),
+    category: document.getElementById("intentCategory").value.trim() || "meta",
+    description: document.getElementById("intentDesc").value.trim(),
+    patterns: document.getElementById("intentPatterns").value,
+    keywords: document.getElementById("intentKeywords").value,
+    excludes: document.getElementById("intentExcludes").value,
+    examples: document.getElementById("intentExamples").value,
+    skills: document.getElementById("intentSkills").value
+  };
+  const res = await apiFetch("/api/intent/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (!res.ok) { status.textContent = data.error || "保存失败"; return; }
+  await loadIntents();
+  const found = (intentsData.intents || []).find(x => x.id === payload.id);
+  fillIntent(found || null);
+  document.getElementById("intentStatus").textContent = "已保存。" + (data.project || "");
+}
+
+async function deleteIntent() {
+  if (!currentIntent) return;
+  if (!window.confirm(`删除 intent ${currentIntent.id}？`)) return;
+  const status = document.getElementById("intentStatus");
+  const res = await apiFetch("/api/intent/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: currentIntent.id })
+  });
+  const data = await res.json();
+  if (!res.ok) { status.textContent = data.error || "删除失败"; return; }
+  await loadIntents();
+  fillIntent(null);
+  status.textContent = "已删除。" + (data.project || "");
+}
+
+intentList.onclick = ev => {
+  const row = ev.target.closest("button[data-intent]");
+  if (!row) return;
+  const found = (intentsData.intents || []).find(x => x.id === row.dataset.intent);
+  if (found) fillIntent(found);
+};
+document.getElementById("intentSearch").oninput = renderIntentList;
+document.getElementById("intentNew").onclick = () => fillIntent(null);
+document.getElementById("intentSave").onclick = saveIntent;
+document.getElementById("intentDelete").onclick = deleteIntent;
+document.getElementById("intentClose").onclick = () => intentPanel.classList.add("hidden");
+document.getElementById("intentToggle").onclick = async () => {
+  intentPanel.classList.remove("hidden");
+  try { await loadIntents(); } catch (err) { document.getElementById("intentStatus").textContent = String(err); }
+};
+
+async function openItem(rel) {
+  const res = await apiFetch("/api/item?rel=" + encodeURIComponent(rel));
+  const data = await res.json();
+  if (!res.ok) { detail.innerHTML = `<p class="empty">${esc(data.error || "打不开")}</p>`; return; }
+  current = data;
+  renderList();
+  const needs = (data.requires || []).map(x => needName[x] || x).join("、");
+  detail.innerHTML = `
+    <div class="detail-top">
+      <h2 id="title">${esc(data.id)}</h2>
+      <span class="tag ${data.kind}">${kindName[data.kind] || ""}</span>
+    </div>
+    <div class="path">catalog/${esc(data.rel)}/${esc(data.bodyName)}</div>
+    <p class="blurb">${esc(data.excerpt || "正文开头没有一段说明。")}</p>
+    <label for="when">用途。一行一条。技能按这个决定什么时候调用。</label>
+    <textarea id="when">${esc(data.when)}</textarea>
+    <label for="whenNot">这些情况不调用</label>
+    <textarea id="whenNot">${esc(data.whenNot)}</textarea>
+    <div class="intent-grid">
+      <div>
+        <label for="category">分类</label>
+        <input type="text" id="category" value="${esc(data.category)}" placeholder="science">
+      </div>
+      <div>
+        <label for="intents">绑定 intent（逗号分隔）</label>
+        <input type="text" id="intents" value="${esc(data.intents)}" placeholder="find-skill, chemistry-data">
+      </div>
+    </div>
+    <label for="tags">tags（一行一个；只在本机验证过的写“限本机”）</label>
+    <textarea id="tags">${esc(data.tags)}</textarea>
+    <label for="keywords">keywords（一行一条）</label>
+    <textarea id="keywords">${esc(data.keywords)}</textarea>
+    <label for="examples">examples（一行一条真实话术）</label>
+    <textarea id="examples">${esc(data.examples)}</textarea>
+    <div class="row-inline">
+      <div style="flex:1">
+        <label for="requires">requires（一行一个）</label>
+        <textarea id="requires">${esc((data.requires || []).join(String.fromCharCode(10)))}</textarea>
+      </div>
+      <div style="flex:1">
+        <label for="agents">agents 标签（一行一个，* 表示全部）</label>
+        <textarea id="agents">${esc((data.agents || []).join(String.fromCharCode(10)))}</textarea>
+      </div>
+    </div>
+    <div class="row-inline">
+      <div>
+        <label for="mode">调用方式</label>
+        <select id="mode">
+          <option value="on-demand">按需</option>
+          <option value="resident">常驻</option>
+        </select>
+      </div>
+      <p class="need">需要：${esc(needs || "未写")}</p>
+    </div>
+    <label for="body">正文</label>
+    <textarea id="body" spellcheck="false">${esc(data.body)}</textarea>
+    <div class="overlay-box">
+      <h3>Agent 覆盖</h3>
+      <div class="overlay-row">
+        <select id="overlayAgent"></select>
+        <label><input type="checkbox" id="overlayIgnore"> 对该 Agent 忽略</label>
+        <button type="button" id="overlaySave">保存覆盖</button>
+        <span id="overlayStatus"></span>
+      </div>
+      <p class="need">特殊版本写到 SKILL.&lt;agent&gt;.md；ignore 写到 SKILL.&lt;agent&gt;.ignore。</p>
+      <textarea id="overlayBody" placeholder="SKILL.<agent>.md 的正文；留空则删除该特殊版本。"></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" class="primary" id="save">保存</button>
+      <button type="button" class="danger" id="askDelete">删除</button>
+      <div id="confirm">放进 _trash，索引里也会去掉。<button type="button" class="danger" id="doDelete">确认删除</button><button type="button" id="cancelDelete">取消</button></div>
+      <span id="status"></span>
+    </div>`;
+  document.getElementById("mode").value = data.mode === "resident" ? "resident" : "on-demand";
+  const overlayAgent = document.getElementById("overlayAgent");
+  overlayAgent.innerHTML = agents.map(agent => `<option value="${esc(agent)}">${esc(agent)}</option>`).join("");
+  if (agents.length) {
+    overlayAgent.value = agents.includes("dsh") ? "dsh" : agents[0];
+    overlayAgent.onchange = loadOverlay;
+    document.getElementById("overlaySave").onclick = saveOverlay;
+    loadOverlay();
+  }
+  document.getElementById("save").onclick = saveItem;
+  document.getElementById("askDelete").onclick = () => document.getElementById("confirm").classList.add("show");
+  document.getElementById("cancelDelete").onclick = () => document.getElementById("confirm").classList.remove("show");
+  document.getElementById("doDelete").onclick = deleteItem;
+}
+
+async function saveItem() {
+  const status = document.getElementById("status");
+  status.textContent = "正在保存…";
+  const res = await apiFetch("/api/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      rel: current.rel,
+      when: document.getElementById("when").value,
+      whenNot: document.getElementById("whenNot").value,
+      category: document.getElementById("category").value,
+      intents: document.getElementById("intents").value,
+      tags: document.getElementById("tags").value,
+      keywords: document.getElementById("keywords").value,
+      examples: document.getElementById("examples").value,
+      requires: document.getElementById("requires").value,
+      agents: document.getElementById("agents").value,
+      mode: document.getElementById("mode").value,
+      body: document.getElementById("body").value
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) { status.textContent = data.error || "保存失败"; return; }
+  status.textContent = "已保存。" + (data.project || "");
+  await loadList();
+  await openItem(current.rel);
+  document.getElementById("status").textContent = "已保存。" + (data.project || "");
+}
+
+async function deleteItem() {
+  const rel = current.rel;
+  const status = document.getElementById("status");
+  status.textContent = "正在删除…";
+  const res = await apiFetch("/api/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rel })
+  });
+  const data = await res.json();
+  if (!res.ok) { status.textContent = data.error || "删除失败"; return; }
+  current = null;
+  await loadList();
+  detail.innerHTML = `<p class="empty">已放进 _trash。${esc(data.project || "")}</p>`;
+}
+
+list.onclick = ev => {
+  const row = ev.target.closest(".row");
+  if (row) openItem(row.dataset.rel);
+};
+q.oninput = renderList;
+document.getElementById("kindChips").onclick = ev => {
+  const btn = ev.target.closest("button");
+  if (!btn) return;
+  kind = btn.dataset.kind;
+  document.querySelectorAll("#kindChips button").forEach(b => b.classList.toggle("on", b === btn));
+  renderList();
+};
+document.getElementById("modeChips").onclick = ev => {
+  const btn = ev.target.closest("button");
+  if (!btn) return;
+  mode = btn.dataset.mode;
+  document.querySelectorAll("#modeChips button").forEach(b => b.classList.toggle("on", b === btn));
+  renderList();
+};
+const routePanel = document.getElementById("routePanel");
+const routeQ = document.getElementById("routeQ");
+const routeOut = document.getElementById("routeOut");
+document.getElementById("routeToggle").onclick = () => routePanel.classList.toggle("hidden");
+async function runRoute() {
+  const q = routeQ.value.trim();
+  if (!q) return;
+  routeOut.textContent = "路由中…";
+  const res = await apiFetch("/api/route?q=" + encodeURIComponent(q) + "&agent=" + encodeURIComponent(document.getElementById("routeAgent").value));
+  const data = await res.json();
+  if (!res.ok) { routeOut.textContent = data.error || "路由失败"; return; }
+  const lines = [];
+  if (data.domains && data.domains.length) {
+    lines.push(`domains: ${data.domains.map(d => d.id + "(" + d.score + ")").join(", ")}`);
+  }
+  lines.push(`intent: ${data.intent || "(none)"}  threshold=${data.threshold ?? "-"}`);
+  lines.push(`slots: ${Object.entries(data.slots || {}).map(([k, v]) => k + "=" + v).join(", ") || "-"}`);
+  lines.push("");
+  for (const item of data.candidates || []) {
+    lines.push(`${item.id}  [${item.kind}/${item.category}]  score=${item.score}`);
+    lines.push(`  ${item.path}`);
+    if (item.why) lines.push(`  why: ${item.why}`);
+    else if (item.summary) lines.push(`  ${item.summary.slice(0, 180)}`);
+  }
+  if (data.rules && data.rules.length) lines.push(`rules（不占候选）: ${data.rules.map(r => r.id).join(", ")}`);
+  if (data.rejected && data.rejected.length) {
+    lines.push(`rejected: ${data.rejected.slice(0, 8).map(r => r.intent + "=" + r.reason).join(", ")}`);
+  }
+  if (!data.candidates || !data.candidates.length) lines.push("没有候选；先补 intent 或直接问用户。");
+  routeOut.textContent = lines.join("\n");
+}
+document.getElementById("routeBtn").onclick = runRoute;
+routeQ.addEventListener("keydown", ev => { if (ev.key === "Enter") runRoute(); });
+document.addEventListener("keydown", ev => {
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
+    ev.preventDefault();
+    if (current) saveItem();
+  }
+});
+loadAgents().then(loadList).catch(err => { list.innerHTML = `<p class="empty">${esc(err)}</p>`; });
+</script>
+</body>
+</html>
